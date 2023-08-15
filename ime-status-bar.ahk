@@ -22,9 +22,11 @@ TimerHandler() {
   try {
     UpdateImeStatusBar()
   } catch TargetError {
-    ; ignore TargetError
+    ; ignore Error
+  } catch OSError {
+    ; ignore Error
   } catch Error as err {
-    MsgBox err
+    MsgBox err.Message
   }
 }
 

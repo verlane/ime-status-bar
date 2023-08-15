@@ -24,7 +24,7 @@ IME_Status(wParam, winTitle := "A") {
   try {
     hwnd := ControlGetFocus(winTitle)
     if (!hwnd) {
-      hwnd := WinExist("A")
+      hwnd := WinExist(winTitle)
     }
     hIME := DllCall("imm32\ImmGetDefaultIMEWnd", "UInt", hwnd, "UInt")
     result := SendMessage(0x0283, wParam, 0x0000, , "ahk_id " hIME)
