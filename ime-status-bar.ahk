@@ -7,6 +7,10 @@ InstallMouseHook
 
 #Include "%A_ScriptDir%\lib\IME.ahk"
 
+if (!A_IsCompiled) {
+  TraySeticon(A_ScriptDir . "\ime-status-bar.ico")
+}
+
 IME_STATUS_GUI_BAR_WIDTH := 10
 ACTIVE_ID := ""
 SCREEN_DPI_RATE := A_ScreenDPI / 96 ; 4K 125% = 1.25
@@ -16,7 +20,7 @@ ImeStatusBarGui := Gui(GUI_OPT)
 ImeStatusBarGui.MarginX := 0
 ImeStatusBarGui.MarginY := 0
 
-SetTimer(TimerHandler, 10)
+SetTimer(TimerHandler, 100)
 
 TimerHandler() {
   try {
@@ -77,7 +81,10 @@ ShowImeStatusBar(imeGet, imeGetConv, x, y, width, height, activeTitle := "", act
     return
   }
 
-  x := x - IME_STATUS_GUI_BAR_WIDTH - 4
+  if (x >= 0) {
+    x := x - IME_STATUS_GUI_BAR_WIDTH - 4
+  }
+
   height := Floor(height / SCREEN_DPI_RATE) ; sCREEN_DPI_RATE 100% = 1.0
 
   ; 표시 위치 조정
