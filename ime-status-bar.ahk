@@ -48,10 +48,10 @@ UpdateImeStatusBar() {
   ; }
 
   activeClass := WinGetClass("ahk_id " hwnd)
-  ; if (activeClass ~= "MultitaskingViewFrame|Shell_TrayWnd|NotifyIconOverflowWindow|Windows.UI.Core.CoreWindow|UnityWndClass|Progman") { ; check process with regex
-  ;   ImeStatusBarGui.Hide()
-  ;   return
-  ; }
+  if (activeClass ~= "MultitaskingViewFrame|Shell_TrayWnd|NotifyIconOverflowWindow|Windows.UI.Core.CoreWindow|UnityWndClass|Progman") { ; check process with regex
+    ImeStatusBarGui.Hide()
+    return
+  }
 
   activeProcessName := WinGetProcessName("ahk_id " hwnd)
   ; if (activeProcessName ~= "PotPlayerMini64.exe|PotPlayer64.exe|ShareX.exe|StarCraft.exe") { ; check process with regex
