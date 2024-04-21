@@ -6,6 +6,9 @@
 ; } else if (imeGetConv = 0) { ; English on Korean
 ; } else { ; English on Japanese
 ; }
+; if (IME_GetSentenceMode() = 0)) {
+;   not input mode
+; }
 
 imm32 := DllCall("LoadLibrary", "Str", "imm32.dll", "Ptr")
 
@@ -15,6 +18,10 @@ IME_GET(winTitle := "A") {
 
 IME_GetConvMode(winTitle := "A") {
   return IME_Status(0x001, winTitle)
+}
+
+IME_GetSentenceMode(winTitle := "A") {
+  return IME_Status(0x003, winTitle)
 }
 
 IME_Status(wParam, winTitle := "A") {

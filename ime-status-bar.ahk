@@ -36,27 +36,28 @@ TimerHandler() {
 
 UpdateImeStatusBar() {
   hwnd := WinExist("A")
-  if (!hwnd) {
+  if (!hwnd || hwnd == ImeStatusBarGui.Hwnd || IME_GetSentenceMode() == 0) {
+    ImeStatusBarGui.Hide()
     return
   }
 
   activeTitle := WinGetTitle("ahk_id " hwnd)
-  if (activeTitle == "" || activeTitle ~= "ファイルの削除" || activeTitle ~= "BSB Pomodoro Timer") {
-    ImeStatusBarGui.Hide()
-    return
-  }
+  ; if (activeTitle == "" || activeTitle ~= "ファイルの削除" || activeTitle ~= "BSB Pomodoro Timer") {
+  ;   ImeStatusBarGui.Hide()
+  ;   return
+  ; }
 
   activeClass := WinGetClass("ahk_id " hwnd)
-  if (activeClass ~= "MultitaskingViewFrame|Shell_TrayWnd|NotifyIconOverflowWindow|Windows.UI.Core.CoreWindow|UnityWndClass|Progman") { ; check process with regex
-    ImeStatusBarGui.Hide()
-    return
-  }
+  ; if (activeClass ~= "MultitaskingViewFrame|Shell_TrayWnd|NotifyIconOverflowWindow|Windows.UI.Core.CoreWindow|UnityWndClass|Progman") { ; check process with regex
+  ;   ImeStatusBarGui.Hide()
+  ;   return
+  ; }
 
   activeProcessName := WinGetProcessName("ahk_id " hwnd)
-  if (activeProcessName ~= "PotPlayerMini64.exe|PotPlayer64.exe|ShareX.exe|StarCraft.exe") { ; check process with regex
-    ImeStatusBarGui.Hide()
-    return
-  }
+  ; if (activeProcessName ~= "PotPlayerMini64.exe|PotPlayer64.exe|ShareX.exe|StarCraft.exe") { ; check process with regex
+  ;   ImeStatusBarGui.Hide()
+  ;   return
+  ; }
 
   WinGetPos(&imeX, &imeY, &imeWidth, &imeHeight, "ahk_id " hwnd) ; x, y, width, height 가 중복되기때문에 변수명을 변경
   if (imeWidth >= A_ScreenWidth) { ; 크롬 전체화면시 비표시(유튜브용)
