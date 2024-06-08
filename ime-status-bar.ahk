@@ -82,11 +82,11 @@ ShowImeStatusBar(imeGet, imeGetConv, x, y, width, height, activeTitle := "", act
     return
   }
 
-  if (x >= 0) {
+  if (x > 0) {
     x := x - IME_STATUS_GUI_BAR_WIDTH - 4
   }
 
-  height := Floor(height / SCREEN_DPI_RATE) ; sCREEN_DPI_RATE 100% = 1.0
+  height := Floor(height / SCREEN_DPI_RATE) ; SCREEN_DPI_RATE 100% = 1.0
 
   ; 표시 위치 조정
   if (!(activeProcessName ~= "AutoHotkey.exe|KakaoTalk.exe|SourceTree.exe|slack.exe|Ditto.exe|EXCEL.EXE|WINWORD.EXE|Code.exe|LINE.exe")) {
@@ -104,7 +104,7 @@ ShowImeStatusBar(imeGet, imeGetConv, x, y, width, height, activeTitle := "", act
     ImeStatusBarGui.BackColor := "00a32c" ; green
   }
 
-  ImeStatusBarGui.Opt(GUI_OPT)
+  ImeStatusBarGui.Opt("+AlwaysOnTop")
   ImeStatusBarGui.Show("x" x " y" y " w" IME_STATUS_GUI_BAR_WIDTH " h" height " NoActivate")
   WinSetExStyle(+0x20, ImeStatusBarGui) ; not clickable (toggle)
   WinSetTransparent(100, ImeStatusBarGui)

@@ -1,13 +1,12 @@
 ; IME.ahk ( eamat http://www6.atwiki.jp/eamat/ ) for AutoHotkey V2
 ; For Windows 11 old Microsoft IME
 ;
-; if (imeGet = 1 && (imeGetConv = 0 || imeGetConv = 1)) { ; Korean
-; } else if (imeGet = 1 && (imeGetConv = 25 || imeGetConv = 9)) { ; Japanese
-; } else if (imeGetConv = 0) { ; English on Korean
+; if (IME_GET() = 1 && (IME_GetConvMode() = 0 || IME_GetConvMode() = 1)) { ; Korean
+; } else if (IME_GET() = 1 && (IME_GetConvMode() = 25 || IME_GetConvMode() = 9)) { ; Japanese
+; } else if (IME_GetConvMode() = 0) { ; English on Korean
 ; } else { ; English on Japanese
 ; }
-; if (IME_GetSentenceMode() = 0)) {
-;   not input mode
+; if (IME_GetSentenceMode() = 0) { ; not input mode
 ; }
 
 imm32 := DllCall("LoadLibrary", "Str", "imm32.dll", "Ptr")
@@ -22,6 +21,10 @@ IME_GetConvMode(winTitle := "A") {
 
 IME_GetSentenceMode(winTitle := "A") {
   return IME_Status(0x003, winTitle)
+}
+
+IME_GETConverting() {
+  return DllCall("Imm32\ImmGetOpenStatus")
 }
 
 IME_Status(wParam, winTitle := "A") {
