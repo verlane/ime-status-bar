@@ -15,7 +15,7 @@ IME_STATUS_GUI_BAR_WIDTH := 10
 ACTIVE_ID := ""
 SCREEN_DPI_RATE := A_ScreenDPI / 96 ; 4K 125% = 1.25
 
-GUI_OPT := "+Owner -Caption +AlwaysOnTop -Border"
+GUI_OPT := "+Owner +OwnDialogs -Caption +AlwaysOnTop -Border"
 ImeStatusBarGui := Gui(GUI_OPT)
 ImeStatusBarGui.MarginX := 0
 ImeStatusBarGui.MarginY := 0
