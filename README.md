@@ -1,3 +1,7 @@
+# Important
+
+Recover to an older version of Microsoft IME
+
 # IME Status Bar
 
 <img src="https://github.com/verlane/ime-status-bar/assets/3623209/77e157f3-001c-4f19-8d36-84ce426a2ca5" width="556">
