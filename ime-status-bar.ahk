@@ -14,13 +14,15 @@ if (!A_IsCompiled) {
 IME_STATUS_GUI_BAR_WIDTH := 10
 ACTIVE_ID := ""
 SCREEN_DPI_RATE := A_ScreenDPI / 96 ; 4K 125% = 1.25
+TIMER_PERIOD := 100 ; ms
 
 GUI_OPT := "+Owner +OwnDialogs -Caption +AlwaysOnTop -Border"
 ImeStatusBarGui := Gui(GUI_OPT)
 ImeStatusBarGui.MarginX := 0
 ImeStatusBarGui.MarginY := 0
+LastShowImeStatusTime := 0
 
-SetTimer(TimerHandler, 100)
+SetTimer(TimerHandler, TIMER_PERIOD)
 
 TimerHandler() {
   try {
@@ -35,6 +37,8 @@ TimerHandler() {
 }
 
 UpdateImeStatusBar() {
+  global LastShowImeStatusTime += TIMER_PERIOD
+
   hwnd := WinExist("A")
   if (!hwnd || hwnd == ImeStatusBarGui.Hwnd || IME_GetSentenceMode() == 0) {
     ImeStatusBarGui.Hide()
@@ -42,10 +46,6 @@ UpdateImeStatusBar() {
   }
 
   activeTitle := WinGetTitle("ahk_id " hwnd)
-  ; if (activeTitle == "" || activeTitle ~= "ファイルの削除" || activeTitle ~= "BSB Pomodoro Timer") {
-  ;   ImeStatusBarGui.Hide()
-  ;   return
-  ; }
 
   activeClass := WinGetClass("ahk_id " hwnd)
   if (activeClass ~= "MultitaskingViewFrame|Shell_TrayWnd|NotifyIconOverflowWindow|Windows.UI.Core.CoreWindow|UnityWndClass|Progman") { ; check process with regex
@@ -54,10 +54,6 @@ UpdateImeStatusBar() {
   }
 
   activeProcessName := WinGetProcessName("ahk_id " hwnd)
-  ; if (activeProcessName ~= "PotPlayerMini64.exe|PotPlayer64.exe|ShareX.exe|StarCraft.exe") { ; check process with regex
-  ;   ImeStatusBarGui.Hide()
-  ;   return
-  ; }
 
   WinGetPos(&imeX, &imeY, &imeWidth, &imeHeight, "ahk_id " hwnd) ; x, y, width, height 가 중복되기때문에 변수명을 변경
   if (imeWidth >= A_ScreenWidth) { ; 크롬 전체화면시 비표시(유튜브용)
@@ -72,7 +68,8 @@ UpdateImeStatusBar() {
   if (ACTIVE_ID != activeId || (A_TimeIdlePhysical < 5000 && !WinExist("ahk_id " ImeStatusBarGui.Hwnd))) {
     ShowImeStatusBar(imeGet, imeGetConv, imeX, imeY, imeWidth, imeHeight, activeTitle, activeClass, activeProcessName)
     global ACTIVE_ID := activeId
-  } else if (A_TimeIdlePhysical > 5000) {
+    LastShowImeStatusTime := 0
+  } else if (LastShowImeStatusTime > 5000 && A_TimeIdlePhysical > 5000) {
     ImeStatusBarGui.Hide()
   }
 }
