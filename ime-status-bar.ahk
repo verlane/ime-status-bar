@@ -16,11 +16,13 @@ ACTIVE_ID := ""
 SCREEN_DPI_RATE := A_ScreenDPI / 96 ; 4K 125% = 1.25
 TIMER_PERIOD := 100 ; ms
 
-GUI_OPT := "+Owner +OwnDialogs -Caption +AlwaysOnTop -Border"
-ImeStatusBarGui := Gui(GUI_OPT)
+ImeStatusBarGui := Gui("-Caption +AlwaysOnTop +ToolWindow")
 ImeStatusBarGui.MarginX := 0
 ImeStatusBarGui.MarginY := 0
 LastShowImeStatusTime := 0
+
+; Alt+Tab에서 제외
+WinSetExStyle("+0x80", ImeStatusBarGui)
 
 SetTimer(TimerHandler, TIMER_PERIOD)
 
@@ -101,8 +103,8 @@ ShowImeStatusBar(imeGet, imeGetConv, x, y, width, height, activeTitle := "", act
     ImeStatusBarGui.BackColor := "00a32c" ; green
   }
 
-  ImeStatusBarGui.Opt("+AlwaysOnTop")
   ImeStatusBarGui.Show("x" x " y" y " w" IME_STATUS_GUI_BAR_WIDTH " h" height " NoActivate")
-  WinSetExStyle(+0x20, ImeStatusBarGui) ; not clickable (toggle)
+  ; Alt+Tab에서 제외 및 클릭 불가능하게
+  WinSetExStyle("+0x80 +0x20", ImeStatusBarGui)
   WinSetTransparent(100, ImeStatusBarGui)
 }
