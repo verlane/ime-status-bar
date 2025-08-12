@@ -106,5 +106,6 @@ ShowImeStatusBar(imeGet, imeGetConv, x, y, width, height, activeTitle := "", act
   ImeStatusBarGui.Show("x" x " y" y " w" IME_STATUS_GUI_BAR_WIDTH " h" height " NoActivate")
   ; Alt+Tab에서 제외 및 클릭 불가능하게
   WinSetExStyle("+0x80 +0x20", ImeStatusBarGui)
+  WinSetAlwaysOnTop(1, ImeStatusBarGui)
   WinSetTransparent(100, ImeStatusBarGui)
 }
