@@ -16,7 +16,7 @@ ACTIVE_ID := ""
 SCREEN_DPI_RATE := A_ScreenDPI / 96 ; 4K 125% = 1.25
 TIMER_PERIOD := 100 ; ms
 
-ImeStatusBarGui := Gui("-Caption +AlwaysOnTop +ToolWindow")
+ImeStatusBarGui := Gui("-Caption +AlwaysOnTop +ToolWindow +E0x20")
 ImeStatusBarGui.MarginX := 0
 ImeStatusBarGui.MarginY := 0
 LastShowImeStatusTime := 0
@@ -104,8 +104,9 @@ ShowImeStatusBar(imeGet, imeGetConv, x, y, width, height, activeTitle := "", act
   }
 
   ImeStatusBarGui.Show("x" x " y" y " w" IME_STATUS_GUI_BAR_WIDTH " h" height " NoActivate")
-  ; Alt+Tab에서 제외 및 클릭 불가능하게
-  WinSetExStyle("+0x80 +0x20", ImeStatusBarGui)
+  ; Alt+Tab에서 제외 및 클릭 통과 설정
+  WinSetExStyle("+0x80", ImeStatusBarGui)
+  WinSetExStyle("+0x20", ImeStatusBarGui)
   WinSetAlwaysOnTop(1, ImeStatusBarGui)
   WinSetTransparent(100, ImeStatusBarGui)
 }
