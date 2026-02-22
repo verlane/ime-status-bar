@@ -6,6 +6,8 @@ InstallKeybdHook
 InstallMouseHook
 
 #Include "%A_ScriptDir%\lib\IME.ahk"
+#Include "%A_ScriptDir%\lib\AutoActivate.ahk"
+#Include "%A_ScriptDir%\lib\Settings.ahk"
 
 if (!A_IsCompiled) {
   TraySeticon(A_ScriptDir . "\ime-status-bar.ico")
@@ -21,18 +23,100 @@ ImeStatusBarGui.MarginX := 0
 ImeStatusBarGui.MarginY := 0
 LastShowImeStatusTime := 0
 
-; Alt+Tab에서 제외
+; Alt+Tab exclude
 WinSetExStyle("+0x80", ImeStatusBarGui)
 
-SetTimer(TimerHandler, TIMER_PERIOD)
+; ============================================================
+; Initialize
+; ============================================================
+
+Settings_Load()
+
+; IME Status Bar
+if (CFG_ImeStatusBar)
+  ImeStatusBar_Start()
+
+; Auto Activate
+AutoActivate_SetProcesses(Settings_GetProcessList())
+AutoActivate_SetThreshold(CFG_MoveThreshold)
+AutoActivate_SetDelay(CFG_HoverDelay)
+if (CFG_AutoActivate)
+  AutoActivate_Start()
+
+; ============================================================
+; Tray Menu
+; ============================================================
+
+SetupTrayMenu()
+
+SetupTrayMenu() {
+  A_TrayMenu.Delete()
+  A_TrayMenu.Add("IME Status Bar", TrayToggleIme)
+  A_TrayMenu.Add("Auto Activate", TrayToggleAA)
+  A_TrayMenu.Add()
+  A_TrayMenu.Add("Settings...", (*) => Settings_ShowGui())
+  A_TrayMenu.Add()
+  A_TrayMenu.Add("Reload", (*) => Reload())
+  A_TrayMenu.Add("Exit", (*) => ExitApp())
+  UpdateTrayChecks()
+}
+
+TrayToggleIme(*) {
+  global CFG_ImeStatusBar := !CFG_ImeStatusBar
+  if (CFG_ImeStatusBar)
+    ImeStatusBar_Start()
+  else
+    ImeStatusBar_Stop()
+  Settings_Save()
+  UpdateTrayChecks()
+}
+
+TrayToggleAA(*) {
+  global CFG_AutoActivate := !CFG_AutoActivate
+  if (CFG_AutoActivate)
+    AutoActivate_Start()
+  else
+    AutoActivate_Stop()
+  Settings_Save()
+  UpdateTrayChecks()
+}
+
+UpdateTrayChecks() {
+  if (CFG_ImeStatusBar)
+    A_TrayMenu.Check("IME Status Bar")
+  else
+    A_TrayMenu.Uncheck("IME Status Bar")
+
+  if (CFG_AutoActivate)
+    A_TrayMenu.Check("Auto Activate")
+  else
+    A_TrayMenu.Uncheck("Auto Activate")
+}
+
+; ============================================================
+; IME Status Bar Start / Stop
+; ============================================================
+
+ImeStatusBar_Start() {
+  SetTimer(TimerHandler, TIMER_PERIOD)
+}
+
+ImeStatusBar_Stop() {
+  SetTimer(TimerHandler, 0)
+  ImeStatusBarGui.Hide()
+}
+
+; ============================================================
+; IME Status Bar Logic
+; ============================================================
 
 TimerHandler() {
   try {
     UpdateImeStatusBar()
   } catch TargetError {
-    ; ignore Error
+    ; ignore
   } catch OSError {
-    ; ignore Error
+    ; ignore
   } catch Error as err {
     MsgBox err.Message
   }
@@ -50,15 +134,15 @@ UpdateImeStatusBar() {
   activeTitle := WinGetTitle("ahk_id " hwnd)
 
   activeClass := WinGetClass("ahk_id " hwnd)
-  if (activeClass ~= "MultitaskingViewFrame|Shell_TrayWnd|NotifyIconOverflowWindow|Windows.UI.Core.CoreWindow|UnityWndClass|Progman") { ; check process with regex
+  if (activeClass ~= "MultitaskingViewFrame|Shell_TrayWnd|NotifyIconOverflowWindow|Windows.UI.Core.CoreWindow|UnityWndClass|Progman") {
     ImeStatusBarGui.Hide()
     return
   }
 
   activeProcessName := WinGetProcessName("ahk_id " hwnd)
 
-  WinGetPos(&imeX, &imeY, &imeWidth, &imeHeight, "ahk_id " hwnd) ; x, y, width, height 가 중복되기때문에 변수명을 변경
-  if (imeWidth >= A_ScreenWidth) { ; 크롬 전체화면시 비표시(유튜브용)
+  WinGetPos(&imeX, &imeY, &imeWidth, &imeHeight, "ahk_id " hwnd)
+  if (imeWidth >= A_ScreenWidth) {
     ImeStatusBarGui.Hide()
     return
   }
@@ -85,9 +169,8 @@ ShowImeStatusBar(imeGet, imeGetConv, x, y, width, height, activeTitle := "", act
     x := x - IME_STATUS_GUI_BAR_WIDTH - 4
   }
 
-  height := Floor(height / SCREEN_DPI_RATE) ; SCREEN_DPI_RATE 100% = 1.0
+  height := Floor(height / SCREEN_DPI_RATE)
 
-  ; 표시 위치 조정
   if (!(activeProcessName ~= "AutoHotkey.exe|KakaoTalk.exe|SourceTree.exe|slack.exe|Ditto.exe|EXCEL.EXE|WINWORD.EXE|Code.exe|LINE.exe")) {
     x := x + Floor(10 / SCREEN_DPI_RATE)
     height := height - Floor(8 / SCREEN_DPI_RATE)
@@ -104,7 +187,6 @@ ShowImeStatusBar(imeGet, imeGetConv, x, y, width, height, activeTitle := "", act
   }
 
   ImeStatusBarGui.Show("x" x " y" y " w" IME_STATUS_GUI_BAR_WIDTH " h" height " NoActivate")
-  ; Alt+Tab에서 제외 및 클릭 통과 설정
   WinSetExStyle("+0x80", ImeStatusBarGui)
   WinSetExStyle("+0x20", ImeStatusBarGui)
   WinSetAlwaysOnTop(1, ImeStatusBarGui)
