@@ -22,7 +22,10 @@ ImeDetector_GetFocusedHwnd(winTitle := "A") {
     DetectHiddenWindows(True)
     hwnd := 0
     try {
-        hwnd := ControlGetFocus(winTitle)
+        focusedControl := ControlGetFocus(winTitle)
+        if (focusedControl != "") {
+            try hwnd := ControlGetHwnd(focusedControl, winTitle)
+        }
         if (!hwnd)
             hwnd := WinExist(winTitle)
     } catch {
@@ -30,8 +33,9 @@ ImeDetector_GetFocusedHwnd(winTitle := "A") {
             hwnd := WinExist(winTitle)
         } catch {
         }
+    } finally {
+        DetectHiddenWindows(temp)
     }
-    DetectHiddenWindows(temp)
     return hwnd
 }
 
@@ -51,13 +55,22 @@ ImeDetector_GetLanguage(hwnd) {
 }
 
 ImeDetector_IsImeOpen(hwnd, language) {
+    if (language == "ko") {
+        ; Korean Microsoft IME (new TSF): observed states so far:
+        ; - English mode: ConvMode = 0 or 9
+        ; - Hangul input: other non-zero ConvMode values, including 1 and 65535
+        ; OpenStatus can be 0 or 1 in English mode, so it is not reliable by itself.
+        convMode := ImeDetector_GetConvMode(hwnd)
+        return convMode != 0 && convMode != 9
+    }
+
     if (language == "ja" && ImeDetector_IsGoogleIme()) {
         ; Google IME Japanese: ConvMode is always 9 regardless of mode.
         ; OpenStatus (wParam=0x0005) is the only reliable on/off signal.
         return ImeDetector_GetOpenStatus(hwnd) != 0
     }
 
-    ; MS IME Japanese / Korean: ConvMode=0 means ENG, non-zero means active input
+    ; MS IME Japanese: ConvMode=0 means ENG, non-zero means active input
     return ImeDetector_GetConvMode(hwnd) != 0
 }
 
