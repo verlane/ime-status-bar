@@ -56,12 +56,12 @@ ImeDetector_GetLanguage(hwnd) {
 
 ImeDetector_IsImeOpen(hwnd, language) {
     if (language == "ko") {
-        ; Korean Microsoft IME (new TSF): observed states so far:
-        ; - English mode: ConvMode = 0 or 9
-        ; - Hangul input: other non-zero ConvMode values, including 1 and 65535
-        ; OpenStatus can be 0 or 1 in English mode, so it is not reliable by itself.
+        ; Korean Microsoft IME: observed states:
+        ; - English mode: OpenStatus=0 (definitive), or ConvMode=0/9
+        ; - Hangul input: OpenStatus=1 AND ConvMode != 0/9 (e.g. 1, 65535)
+        openStatus := ImeDetector_GetOpenStatus(hwnd)
         convMode := ImeDetector_GetConvMode(hwnd)
-        return convMode != 0 && convMode != 9
+        return openStatus != 0 && convMode != 0 && convMode != 9
     }
 
     if (language == "ja" && ImeDetector_IsGoogleIme()) {
