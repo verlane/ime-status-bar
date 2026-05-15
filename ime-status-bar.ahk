@@ -5,7 +5,8 @@ Persistent
 InstallKeybdHook
 InstallMouseHook
 
-#Include "%A_ScriptDir%\lib\IME.ahk"
+#Include "%A_ScriptDir%\lib\ImeDetector.ahk"
+#Include "%A_ScriptDir%\lib\ImeDiagnostics.ahk"
 #Include "%A_ScriptDir%\lib\AutoActivate.ahk"
 #Include "%A_ScriptDir%\lib\Settings.ahk"
 
@@ -55,6 +56,7 @@ SetupTrayMenu() {
   A_TrayMenu.Add("Auto Activate", TrayToggleAA)
   A_TrayMenu.Add()
   A_TrayMenu.Add("Settings...", (*) => Settings_ShowGui())
+  A_TrayMenu.Add("Diagnostics...", (*) => ImeDiagnostics_Show())
   A_TrayMenu.Add()
   A_TrayMenu.Add("Reload", (*) => Reload())
   A_TrayMenu.Add("Exit", (*) => ExitApp())
@@ -126,12 +128,10 @@ UpdateImeStatusBar() {
   global LastShowImeStatusTime += TIMER_PERIOD
 
   hwnd := WinExist("A")
-  if (!hwnd || hwnd == ImeStatusBarGui.Hwnd || IME_GetSentenceMode() == 0) {
+  if (!hwnd || hwnd == ImeStatusBarGui.Hwnd) {
     ImeStatusBarGui.Hide()
     return
   }
-
-  activeTitle := WinGetTitle("ahk_id " hwnd)
 
   activeClass := WinGetClass("ahk_id " hwnd)
   if (activeClass ~= "MultitaskingViewFrame|Shell_TrayWnd|NotifyIconOverflowWindow|Windows.UI.Core.CoreWindow|UnityWndClass|Progman") {
@@ -139,6 +139,13 @@ UpdateImeStatusBar() {
     return
   }
 
+  state := ImeDetector_GetState("ahk_id " hwnd)
+  if (state.language == "other") {
+    ImeStatusBarGui.Hide()
+    return
+  }
+
+  activeTitle := WinGetTitle("ahk_id " hwnd)
   activeProcessName := WinGetProcessName("ahk_id " hwnd)
 
   WinGetPos(&imeX, &imeY, &imeWidth, &imeHeight, "ahk_id " hwnd)
@@ -147,12 +154,9 @@ UpdateImeStatusBar() {
     return
   }
 
-  activeId := WinGetPID("ahk_id " hwnd)
-  imeGet := IME_Get("ahk_id " hwnd)
-  imeGetConv := IME_GetConvMode("ahk_id " hwnd)
-  activeId := activeId . "_" . imeGet . "_" . imeGetConv . "_" . imeX . "_" . imeY . "_" . imeWidth . "_" . imeHeight
+  activeId := WinGetPID("ahk_id " hwnd) . "_" . state.language . "_" . state.isComposing . "_" . imeX . "_" . imeY . "_" . imeWidth . "_" . imeHeight
   if (ACTIVE_ID != activeId || (A_TimeIdlePhysical < 5000 && !WinExist("ahk_id " ImeStatusBarGui.Hwnd))) {
-    ShowImeStatusBar(imeGet, imeGetConv, imeX, imeY, imeWidth, imeHeight, activeTitle, activeClass, activeProcessName)
+    ShowImeStatusBar(state.language, state.isComposing, imeX, imeY, imeWidth, imeHeight, activeTitle, activeClass, activeProcessName)
     global ACTIVE_ID := activeId
     LastShowImeStatusTime := 0
   } else if (LastShowImeStatusTime > 5000 && A_TimeIdlePhysical > 5000) {
@@ -160,7 +164,7 @@ UpdateImeStatusBar() {
   }
 }
 
-ShowImeStatusBar(imeGet, imeGetConv, x, y, width, height, activeTitle := "", activeClass := "", activeProcessName := "") {
+ShowImeStatusBar(language, isComposing, x, y, width, height, activeTitle := "", activeClass := "", activeProcessName := "") {
   if (x == "" || y == "" || width == "" || height == "") {
     return
   }
@@ -176,14 +180,14 @@ ShowImeStatusBar(imeGet, imeGetConv, x, y, width, height, activeTitle := "", act
     height := height - Floor(8 / SCREEN_DPI_RATE)
   }
 
-  if (imeGet = 1 && (imeGetConv = 0 || imeGetConv = 1)) { ; Korean
-    ImeStatusBarGui.BackColor := "46c9e2" ; blue
-  } else if (imeGet = 1 && (imeGetConv = 25 || imeGetConv = 9)) { ; Japanese
-    ImeStatusBarGui.BackColor := "f10f2c" ; red
-  } else if (imeGetConv = 0) { ; English on Korean
-    ImeStatusBarGui.BackColor := "facf2c" ; yellow
-  } else { ; English on Japanese
-    ImeStatusBarGui.BackColor := "00a32c" ; green
+  if (language == "ko" && isComposing) {
+    ImeStatusBarGui.BackColor := "46c9e2" ; blue - Korean input
+  } else if (language == "ja" && isComposing) {
+    ImeStatusBarGui.BackColor := "f10f2c" ; red - Japanese input
+  } else if (language == "ko") {
+    ImeStatusBarGui.BackColor := "facf2c" ; yellow - English on Korean IME
+  } else {
+    ImeStatusBarGui.BackColor := "00a32c" ; green - English on Japanese IME
   }
 
   ImeStatusBarGui.Show("x" x " y" y " w" IME_STATUS_GUI_BAR_WIDTH " h" height " NoActivate")

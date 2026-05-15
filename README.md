@@ -1,8 +1,21 @@
-# Important
-
-Recover to an older version of Microsoft IME
-
 # IME Status Bar
+
+Supports both new and old Microsoft IME, and Google Japanese Input (Google IME).
+No need to revert to an older version of Microsoft IME.
+
+## Supported IMEs
+
+- Microsoft IME (Korean / Japanese) — old and new versions
+- Google Japanese Input (Google IME)
+
+## Color Indicators
+
+| Color | Meaning |
+|-------|---------|
+| Blue | Korean input mode |
+| Yellow | English mode (Korean IME active) |
+| Red | Japanese input mode |
+| Green | English mode (Japanese IME active) |
 
 <img src="https://github.com/verlane/ime-status-bar/assets/3623209/77e157f3-001c-4f19-8d36-84ce426a2ca5" width="556">
 <img src="https://github.com/verlane/ime-status-bar/assets/3623209/3bdb5b86-1c21-4b4d-a5ae-f1a28e6cd578" width="556">
