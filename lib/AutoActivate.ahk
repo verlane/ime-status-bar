@@ -81,6 +81,9 @@ AA_CheckMouseHover() {
     if (!AA_ReadyToActivate)
         return
 
+    if (GetKeyState("LButton", "P") || GetKeyState("RButton", "P") || GetKeyState("MButton", "P"))
+        return
+
     if (AA_HoverStartTime = 0) {
         AA_HoverStartTime := A_TickCount
         return
